@@ -53,7 +53,7 @@ $ python3 ./analyze.py /tmp/data 0 10 5
 
 ## Shutting down the profiler
 
-When you are done with profiling, shutdown the profiler process:
+When done with profiling, shutdown the profiler process:
 
 ```
 $ profiler.sh kill_profiler
