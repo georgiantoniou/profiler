@@ -1,6 +1,6 @@
 # C-States profiler
 
-A simple profiler for collecting and analyzing processor C-state residency times.
+A simple profiler for collecting and analyzing processor C-state residency times in a cluster.
 
 ## Setting up and starting the profiler
 
@@ -9,13 +9,13 @@ Edit file ```hosts``` to specify the names of the machines where to install the 
 Install the profiler on the specified machines:
 
 ```
-$ profiler.sh install
+$ ./profiler.sh install
 ```
 
-Start the profiler on the specified machines:
+Start the profiler process on the specified machines:
 
 ```
-$ profiler.sh run_profiler
+$ ./profiler.sh run_profiler
 ```
 
 Note: This only starts the profiler process.
