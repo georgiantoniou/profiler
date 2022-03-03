@@ -1,4 +1,8 @@
-# Setting up and starting the profiler
+# C-States profiler
+
+A simple profiler for collecting and analyzing processor C-state residency times.
+
+## Setting up and starting the profiler
 
 Edit file ```hosts``` to specify the names of the machines where to install the profiler.
 
@@ -17,7 +21,7 @@ $ profiler.sh run_profiler
 Note: This only starts the profiler process.
 
 
-# Profiling
+## Profiling
 
 To start profiling, invoke the profiler in client mode, providing the name of the machine to start profiling on. For example: 
 
@@ -37,7 +41,7 @@ To collect and report profiling data, invoke the profiler in client mode, provid
 $ python3 ./profiler.py -n node1 report -d /tmp/data
 ```
 
-# Analyzing
+## Analyzing
 
 To analyze c-state residency, use the analyze script, providing the directory containing the profiling data to analyze, the range of the cpus to analyze, and the actual duration of the experiment. 
 
@@ -47,7 +51,7 @@ For example, to analyze data in the range 0..10 (excluding) for an experiment of
 $ python3 ./analyze.py /tmp/data 0 10 5
 ```
 
-# Shutting down the profiler
+## Shutting down the profiler
 
 When you are done with profiling, shutdown the profiler process:
 
