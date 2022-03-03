@@ -45,7 +45,7 @@ $ python3 ./profiler.py -n node1 report -d /tmp/data
 
 To analyze c-state residency, use the analyze script, providing the directory containing the profiling data to analyze, the CPUs to analyze, and the actual duration of the experiment. 
 
-For example, to analyze data for CPUs in the range 0..10 (excluding) for an experiment of duration 5s:
+For example, to analyze data for CPUs in the range [0..10) (that is from 0 to 10 excluding) for an experiment of duration 5s:
 
 ```
 $ python3 ./analyze.py /tmp/data 0 10 5
