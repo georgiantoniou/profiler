@@ -17,7 +17,7 @@ install () {
 }
 
 run_profiler () {
-  local vars="PROFILER_HOME=${PROFILER_HOME}"
+  local vars="PROFILER_HOME=${PROFILER_HOME} ITERATION=$1 PID=$2"
   ansible-playbook -v -i hosts ansible/profiler.yml -e "$vars" --tags "run_profiler"
 }
 
@@ -27,3 +27,4 @@ kill_profiler () {
 }
 
 "$@"
+
