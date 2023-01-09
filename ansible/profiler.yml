@@ -5,7 +5,7 @@
   - run_profiler
   tasks:
   - name: Run remote profiler
-    command: "python3 {{ PROFILER_HOME }}/profiler.py"
+    command: "python3 {{ PROFILER_HOME }}/profiler.py -i {{ ITERATION }} -t {{ PID }}"
     async: 10000 
     poll: 0
     register: run_profiler_result_async
