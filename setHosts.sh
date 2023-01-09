@@ -3,7 +3,7 @@
 export ANSIBLE_HOST_KEY_CHECKING=False
 export PROFILER_HOME=/tmp
 
-if [ -z $1 ];
+if [ -z $1 ]; then
   echo "wrong arguments pass number of nodes to monitor and range"
   echo "e.g ./setHosts.sh 2 2 4"
   exit
