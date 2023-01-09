@@ -67,21 +67,35 @@ class EventProfiling:
 
 
 class PerfEventProfiling(EventProfiling):
-    def __init__(self, sampling_period=1, sampling_length=1):
+    def __init__(self, sampling_period=1, sampling_length=1, iteration=1, pid=0):
+        print(sampling_period)
         super().__init__(sampling_period, sampling_length)
         self.perf_path = self.find_perf_path()
-        self.events = self.get_perf_power_events()
+        
+        logging.info('Perf found at {}'.format(self.perf_path)) 
+        
+        self.events = PerfEventProfiling.get_microarchitectural_events()
+        self.perf_stats_events = PerfEventProfiling.get_perf_stat_events()
+        
         self.timeseries = {}
-        for e in self.events:
+        self.iteration=iteration
+	
+        for e in self.perf_stats_events:
             self.timeseries[e] = []
 
+        #for e in self.perf_stats_events:
+         #   self.timeseries[e] = []
+        
+        #get pid of bucket server
+        self.pid = pid
+        print(str(self.pid))
+
     def find_perf_path(self):
-        paths = ['/usr/bin/perf']
-        for path in paths:
-            if os.path.exists(path):
-                logging.info('Perf found at {}'.format(path))
-                return path 
-        logging.error('Perf not found')
+        kernel_uname = os.popen('uname -a').read().strip()
+        if '4.15.0-159-generic' in kernel_uname:
+            return '/usr/bin/perf'
+        else:
+            return '/mydata/linux-4.15.18/perf'
 
     def get_perf_power_events(self):
         events = []
@@ -91,26 +105,186 @@ class PerfEventProfiling(EventProfiling):
             m = re.match("(power/energy-.*/)\s*\[Kernel PMU event]", l)
             if m:
                 events.append(m.group(1))
+
+    @staticmethod
+    def get_microarchitectural_events():
+        events = []
+        
+        events.append("instructions:u")
+        events.append("cycles:u")
+        events.append("instructions:k")
+        events.append("cycles:k")
+       
+        #topdown required counters
+        #topdown level 1 and 2
+        events.append("IDQ_UOPS_NOT_DELIVERED.CORE")
+        events.append("UOPS_ISSUED.ANY")
+        events.append("UOPS_RETIRED.RETIRE_SLOTS")
+        events.append("INT_MISC.RECOVERY_CYCLES_ANY")
+        events.append("CPU_CLK_UNHALTED.THREAD")
+        events.append("cpu/event=0xc2,umask=0x04,name=\'UOPS_RETIRED.MACRO_FUSED\'/")
+        events.append("INST_RETIRED.ANY")
+        events.append("IDQ_UOPS_NOT_DELIVERED.CYCLES_0_UOPS_DELIV.CORE")
+        events.append("BR_MISP_RETIRED.ALL_BRANCHES")
+        events.append("MACHINE_CLEARS.COUNT")
+        events.append("CYCLE_ACTIVITY.STALLS_MEM_ANY")
+        events.append("EXE_ACTIVITY.BOUND_ON_STORES")
+        events.append("CYCLE_ACTIVITY.STALLS_TOTAL")
+        events.append("EXE_ACTIVITY.1_PORTS_UTIL")
+        events.append("EXE_ACTIVITY.2_PORTS_UTIL")
+        #Level 3
+        events.append("ICACHE_16B.IFDATA_STALL")
+        events.append("cpu/event=0x80,umask=0x4,cmask=0x1,edge=1,name=\'icache_16b.ifdata_stall:c1:e1\'/")
+        events.append("ICACHE_64B.IFTAG_STALL")
+        events.append("INT_MISC.CLEAR_RESTEER_CYCLES")
+        events.append("DSB2MITE_SWITCHES.PENALTY_CYCLES")
+        events.append("ILD_STALL.LCP")
+        events.append("IDQ.MS_SWITCHES")
+        events.append("IDQ.ALL_MITE_CYCLES_ANY_UOPS")
+        events.append("IDQ.ALL_MITE_CYCLES_4_UOPS")
+        events.append("IDQ.ALL_DSB_CYCLES_ANY_UOPS")
+        events.append("IDQ.ALL_DSB_CYCLES_4_UOPS")
+        events.append("CYCLE_ACTIVITY.STALLS_L1D_MISS")
+        events.append("cpu/event=0x48,umask=0x02,cmask=0x1,name=\'L1D_PEND_MISS.FB_FULL:c1\'/")
+        events.append("CYCLE_ACTIVITY.STALLS_L2_MISS")
+        events.append("CYCLE_ACTIVITY.STALLS_L3_MISS")
+        events.append("ARITH.DIVIDER_ACTIVE")
+        events.append("cpu/event=0xd0,umask=0x83,name=\'MEM_INST_RETIRED.ANY\'/")
+        events.append("BR_INST_RETIRED.ALL_BRANCHES")
+        events.append("cpu/event=0xc0,umask=0x02,name=\'INST_RETIRED.NOP\'/")
+        events.append("IDQ.MS_UOPS")
+        events.append("MEM_LOAD_RETIRED.L2_HIT")
+        events.append("MEM_LOAD_RETIRED.FB_HIT")
+        events.append("MEM_LOAD_RETIRED.L1_MISS")
+        events.append("EXE_ACTIVITY.EXE_BOUND_0_PORTS")
+        events.append("BACLEARS.ANY")
+        events.append("UOPS_EXECUTED.X87")
+        events.append("UOPS_EXECUTED.THREAD")
+        events.append("FP_ARITH_INST_RETIRED.SCALAR_SINGLE")
+        events.append("FP_ARITH_INST_RETIRED.SCALAR_DOUBLE")
+        events.append("FP_ARITH_INST_RETIRED.128B_PACKED_DOUBLE")
+        events.append("FP_ARITH_INST_RETIRED.128B_PACKED_SINGLE")
+        events.append("FP_ARITH_INST_RETIRED.256B_PACKED_DOUBLE")
+        events.append("FP_ARITH_INST_RETIRED.256B_PACKED_SINGLE")
+        events.append("FP_ARITH_INST_RETIRED.512B_PACKED_DOUBLE")
+        events.append("FP_ARITH_INST_RETIRED.512B_PACKED_SINGLE")
+        
+        events.append("mem_load_retired.l2_miss")
+        events.append("mem_load_retired.l3_miss")
+        events.append("mem_load_retired.l3_hit")
+        events.append("L1-icache-load-misses")
+        events.append("L1-dcache-load-misses")
+        events.append("dTLB-load-misses")
+        events.append("iTLB-load-misses")
+
+
         return events
 
+    @staticmethod
+    def get_perf_stat_events():
+        ev=[]
+        
+        ev.append("instructions:u")
+        ev.append("cycles:u")
+        ev.append("instructions:k")
+        ev.append("cycles:k")
+        ev.append("IDQ_UOPS_NOT_DELIVERED.CORE")
+        ev.append("UOPS_ISSUED.ANY")
+        ev.append("UOPS_RETIRED.RETIRE_SLOTS")
+        ev.append("INT_MISC.RECOVERY_CYCLES_ANY")
+        ev.append("CPU_CLK_UNHALTED.THREAD")
+        ev.append("UOPS_RETIRED.MACRO_FUSED")
+        ev.append("INST_RETIRED.ANY")
+        ev.append("IDQ_UOPS_NOT_DELIVERED.CYCLES_0_UOPS_DELIV.CORE")
+        ev.append("BR_MISP_RETIRED.ALL_BRANCHES")
+        ev.append("MACHINE_CLEARS.COUNT")
+        ev.append("CYCLE_ACTIVITY.STALLS_MEM_ANY")
+        ev.append("EXE_ACTIVITY.BOUND_ON_STORES")
+        ev.append("CYCLE_ACTIVITY.STALLS_TOTAL")
+        ev.append("EXE_ACTIVITY.1_PORTS_UTIL")
+        ev.append("EXE_ACTIVITY.2_PORTS_UTIL")
+        ev.append("ICACHE_16B.IFDATA_STALL")
+        ev.append("icache_16b.ifdata_stall:c1:e1")
+        ev.append("ICACHE_64B.IFTAG_STALL")
+        ev.append("INT_MISC.CLEAR_RESTEER_CYCLES")
+        ev.append("DSB2MITE_SWITCHES.PENALTY_CYCLES")
+        ev.append("ILD_STALL.LCP")
+        ev.append("IDQ.MS_SWITCHES")
+        ev.append("IDQ.ALL_MITE_CYCLES_ANY_UOPS")
+        ev.append("IDQ.ALL_MITE_CYCLES_4_UOPS")
+        ev.append("IDQ.ALL_DSB_CYCLES_ANY_UOPS")
+        ev.append("IDQ.ALL_DSB_CYCLES_4_UOPS")
+        ev.append("CYCLE_ACTIVITY.STALLS_L1D_MISS")
+        ev.append("L1D_PEND_MISS.FB_FULL:c1")
+        ev.append("CYCLE_ACTIVITY.STALLS_L2_MISS")
+        ev.append("CYCLE_ACTIVITY.STALLS_L3_MISS")
+        ev.append("ARITH.DIVIDER_ACTIVE")
+        ev.append("MEM_INST_RETIRED.ANY")
+        ev.append("BR_INST_RETIRED.ALL_BRANCHES")
+        ev.append("INST_RETIRED.NOP")
+        ev.append("IDQ.MS_UOPS")
+        ev.append("MEM_LOAD_RETIRED.L2_HIT")
+        ev.append("MEM_LOAD_RETIRED.FB_HIT")
+        ev.append("MEM_LOAD_RETIRED.L1_MISS")
+        ev.append("EXE_ACTIVITY.EXE_BOUND_0_PORTS")
+        ev.append("BACLEARS.ANY")
+        ev.append("UOPS_EXECUTED.X87")
+        ev.append("UOPS_EXECUTED.THREAD")
+        ev.append("FP_ARITH_INST_RETIRED.SCALAR_SINGLE")
+        ev.append("FP_ARITH_INST_RETIRED.SCALAR_DOUBLE")
+        ev.append("FP_ARITH_INST_RETIRED.128B_PACKED_DOUBLE")
+        ev.append("FP_ARITH_INST_RETIRED.128B_PACKED_SINGLE")
+        ev.append("FP_ARITH_INST_RETIRED.256B_PACKED_DOUBLE")
+        ev.append("FP_ARITH_INST_RETIRED.256B_PACKED_SINGLE")
+        ev.append("FP_ARITH_INST_RETIRED.512B_PACKED_DOUBLE")
+        ev.append("FP_ARITH_INST_RETIRED.512B_PACKED_SINGLE")
+        
+        ev.append("mem_load_retired.l2_miss")
+        ev.append("mem_load_retired.l3_miss")
+        ev.append("mem_load_retired.l3_hit")
+        ev.append("L1-icache-load-misses")
+        ev.append("L1-dcache-load-misses")
+        ev.append("dTLB-load-misses")
+        ev.append("iTLB-load-misses")
+
+
+        return ev
+
     def sample(self, timestamp):
-        events_str = ','.join(self.events)
-        cmd = ['sudo', self.perf_path, 'stat', '-a', '-e', events_str, 'sleep', str(self.sampling_length)]
+        
+        iterations_cycle=math.ceil((len(self.events))/4.0)  #4 number of available perf counters provided by intel +1 in orer to run perf stat without events
+        event_index=self.iteration%iterations_cycle 
+        event_index=event_index*4
+       
+        if (event_index+4) >= len(self.events) :
+            events_str = ','.join(self.events[(event_index):])
+        else:
+            events_str = ','.join(self.events[(event_index):(event_index+4)])
+
+        if events_str=="":
+            cmd = ['sudo', self.perf_path, 'stat', '-a', '-p', self.pid,'sleep', str(self.sampling_length)]
+        else:
+            cmd = ['sudo', self.perf_path, 'stat', '-e', events_str, '-p', self.pid, 'sleep', str(self.sampling_length)]
+        # -p self.pid
         result = subprocess.run(cmd, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         out = result.stdout.decode('utf-8').splitlines() + result.stderr.decode('utf-8').splitlines()
-        for e in self.events:
+        print(out)
+
+        for e in self.perf_stats_events:
+            
             for l in out:
                 l = l.lstrip()
                 m = re.match("(.*)\s+.*\s+{}".format(e), l)
+                
                 if m:
                     value = m.group(1)
                     self.timeseries[e].append((timestamp, str(float(value.replace(',', '')))))
-    
+                   
     # FIXME: Currently, we add a dummy zero sample when we finish sampling. 
     # This helps us to determine the sampling duration later when we analyze the stats
     # It would be nice to have a more clear solution
     def zerosample(self, timestamp):
-        for e in self.events:
+        for e in self.perf_stats_events:
             self.timeseries[e].append((timestamp, str(0.0)))
 
     def interrupt_sample(self):
@@ -118,28 +292,42 @@ class PerfEventProfiling(EventProfiling):
 
     def clear(self):
         self.timeseries = {}
-        for e in self.events:
+        for e in self.perf_stats_events:
             self.timeseries[e] = []
 
     def report(self):
         return self.timeseries
+     
+     
+class RaplCountersProfiling(EventProfiling):
+    raplcounters_path = '/sys/class/powercap/intel-rapl/'   
 
-class MpstatProfiling(EventProfiling):
-    def __init__(self, sampling_period=1, sampling_length=1):
-        super().__init__(sampling_period, sampling_length)
+    def __init__(self, sampling_period=0):
+        super().__init__(sampling_period)
+        self.domain_names = {}
+        self.domain_names = RaplCountersProfiling.power_domain_names()
         self.timeseries = {}
-        self.timeseries['cpu_util'] = []
 
+    @staticmethod
+    def power_domain_names():
+        raplcounters_path = RaplCountersProfiling.raplcounters_path
+        if not os.path.exists(raplcounters_path):
+            return []
+        domain_names = {}
+        
+        #Find all supported domains of the system
+        for root, subdirs, files in os.walk(raplcounters_path):
+            for subdir in subdirs:
+                if "intel-rapl" in subdir:
+                    domain_names[open("{}/{}/{}".format(root, subdir,'name'), "r").read().strip()]= os.path.join(root,subdir,'energy_uj')    
+        return domain_names
+
+   
     def sample(self, timestamp):
-        cmd = ['mpstat', '1', '1']
-        result = subprocess.run(cmd, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        lines = result.stdout.decode('utf-8').splitlines() + result.stderr.decode('utf-8').splitlines()
-        for l in lines:
-            if 'Average' in l:
-                idle_val = float(l.split()[-1])
-                util_val = str(100.00-idle_val)
-                self.timeseries['cpu_util'].append((timestamp, util_val))
-                return 
+         for domain in self.domain_names:
+                value = open(self.domain_names[domain], "r").read().strip()
+                self.timeseries.setdefault(domain, []).append((timestamp, value))
+       
 
     def interrupt_sample(self):
         pass
@@ -149,11 +337,11 @@ class MpstatProfiling(EventProfiling):
 
     def clear(self):
         self.timeseries = {}
-        self.timeseries['cpu_util'] = []
 
     def report(self):
         return self.timeseries
 
+     
 class StateProfiling(EventProfiling):
     cpuidle_path = '/sys/devices/system/cpu/cpu0/cpuidle/'
 
@@ -230,11 +418,11 @@ class ProfilingService:
     def set(self, kv):
         print(kv)
 
-def server(port):
-    perf_event_profiling = PerfEventProfiling(sampling_period=30,sampling_length=30)
-    mpstat_profiling = MpstatProfiling()
+def server(port,perf_iteration,process_id):
+    perf_event_profiling = PerfEventProfiling(sampling_period=120,sampling_length=120,iteration=perf_iteration,pid=process_id)
     state_profiling = StateProfiling(sampling_period=0)
-    profiling_service = ProfilingService([perf_event_profiling, mpstat_profiling, state_profiling])
+    rapl_profiling = RaplCountersProfiling(sampling_period=0)
+    profiling_service = ProfilingService([perf_event_profiling, rapl_profiling, state_profiling])
     hostname = socket.gethostname().split('.')[0]
     server = SimpleXMLRPCServer((hostname, port), allow_none=True)
     server.register_instance(profiling_service)
@@ -324,6 +512,14 @@ def parse_args():
         "-v", "--verbose", dest='verbose', action='store_true',
         help="verbose")
 
+    parser.add_argument(
+        "-i", "--iteration", dest='perf_iteration', type=int, default=1,
+        help="perf iteration to choose the right performance counters")
+    
+    parser.add_argument(
+        "-t", "--taskid", dest='process_id', type=int, default=1,
+        help="process id to attach performance counters on")
+     
     subparsers = parser.add_subparsers(dest='subparser_name', help='sub-command help')
     actions = [StartAction, StopAction, ReportAction, SetAction]
     for a in actions:
@@ -343,7 +539,7 @@ def parse_args():
         else:
             raise Exception('Attempt to run in client mode but no command is given')
     else:
-        server(args.port)
+        server(args.port,args.perf_iteration,args.process_id)
 
 def real_main():
     parse_args()
