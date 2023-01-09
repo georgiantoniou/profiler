@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#!/bin/bash
+
 export ANSIBLE_HOST_KEY_CHECKING=False
 export PROFILER_HOME=/tmp
 
@@ -16,5 +18,7 @@ echo "[profiler]" > hosts
 for i in $(seq $start $end);
 do
   echo $i
-  echo "node$i" 
+  echo "node$i" >> hosts
+done
+
 
