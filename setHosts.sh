@@ -8,13 +8,13 @@ if [ -z $1 ]; then
   echo "e.g ./setHosts.sh 2 2 4"
   exit
 else
-  start=$3
-  end=$4
+  start=$2
+  end=$3
 fi
 
 echo "[profiler]" > hosts
-for i in [$start..$end];
+for i in $(seq $start $end);
 do
-  echo "node$i" >> hosts
-done
+  echo $i
+  echo "node$i" 
 
