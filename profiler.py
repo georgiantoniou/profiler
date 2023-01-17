@@ -422,10 +422,10 @@ class ProfilingService:
         print(kv)
 
 def server(port,perf_iteration,process_id):
-    perf_event_profiling = PerfEventProfiling(sampling_period=120,sampling_length=120,iteration=perf_iteration,pid=process_id)
+    #perf_event_profiling = PerfEventProfiling(sampling_period=120,sampling_length=120,iteration=perf_iteration,pid=process_id)
     state_profiling = StateProfiling(sampling_period=0)
     rapl_profiling = RaplCountersProfiling(sampling_period=0)
-    profiling_service = ProfilingService([perf_event_profiling, rapl_profiling, state_profiling])
+    profiling_service = ProfilingService([rapl_profiling, state_profiling])
     hostname = socket.gethostname().split('.')[0]
     server = SimpleXMLRPCServer((hostname, port), allow_none=True)
     server.register_instance(profiling_service)
