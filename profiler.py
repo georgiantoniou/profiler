@@ -320,7 +320,12 @@ class RaplCountersProfiling(EventProfiling):
         for root, subdirs, files in os.walk(raplcounters_path):
             for subdir in subdirs:
                 if "intel-rapl" in subdir:
-                    domain_names[open("{}/{}/{}".format(root, subdir,'name'), "r").read().strip()]= os.path.join(root,subdir,'energy_uj')
+                    if "dram" in open("{}/{}/{}".format(root, subdir,'name'), "r").read().strip() and "1" in subdir:
+                        domain_names[open("{}/{}/{}".format(root, subdir,'name'), "r").read().strip() + "-1"]= os.path.join(root,subdir,'energy_uj')
+                    elif "dram" in open("{}/{}/{}".format(root, subdir,'name'), "r").read().strip() and "0" in subdir: 
+                        domain_names[open("{}/{}/{}".format(root, subdir,'name'), "r").read().strip() + "-0"]= os.path.join(root,subdir,'energy_uj')
+                    else: 
+                        domain_names[open("{}/{}/{}".format(root, subdir,'name'), "r").read().strip()]= os.path.join(root,subdir,'energy_uj')
         return domain_names
 
 
@@ -408,11 +413,9 @@ class ProfilingService:
     def stop(self):
         for p in self.profilers:
             p.stop()
-        time.sleep(5)
 
     def report(self):
         timeseries = {}
-        time.sleep(5)
         for p in self.profilers:
             t = p.report()
             timeseries = {**timeseries, **t}
